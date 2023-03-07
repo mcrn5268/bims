@@ -20,16 +20,20 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateUser({String? name, String? type, String? image, String? image_url}) {
+  void clearUser() {
+    _user = null;
+    notifyListeners();
+  }
+
+  void updateUser({String? Fname, String? Lname}) {
     if (_user != null) {
       _user = UserModel(
-          uid: _user!.uid,
-          email: _user!.email,
-          name: name ?? _user!.name,
-          type: type ?? _user!.type,
-          image: image ?? _user!.image,
-          image_url: image_url ?? _user!.image_url);
-      
+        uid: _user!.uid,
+        email: _user!.email,
+        Fname: Fname ?? _user!.Fname,
+        Lname: Lname ?? _user!.Lname,
+      );
+
       notifyListeners();
     }
   }
@@ -57,15 +61,18 @@ class UserProvider extends ChangeNotifier {
     final firestoreUserData = await FirestoreService()
         .read(collection: 'users', documentId: user!.uid);
     final userData = UserModel(
-        uid: user.uid,
-        email: user.email ?? '',
-        name: firestoreUserData!['name'],
-        //phoneNumber: _phoneNumberController.text,
-        type: firestoreUserData['type'],
-        image: firestoreUserData['image'],
-        image_url: firestoreUserData['image_url']);
+      uid: user.uid,
+      email: user.email ?? '',
+      Fname: firestoreUserData!['name']['first'],
+      Lname: firestoreUserData!['name']['last'],
+    );
     if (_user == null) {
       setUser(userData);
     }
+  }
+
+  Future<void> signOut() async {
+    await FirebaseAuth.instance.signOut();
+    clearUser();
   }
 }

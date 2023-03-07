@@ -1,18 +1,12 @@
 class UserModel {
   final String uid;
   final String email;
-  String name;
-  //final String phoneNumber;
-  final String type;
-  String image;
-  String image_url;
+  final String Fname;
+  final String Lname;
 
   UserModel(
       {required this.uid,
       required this.email,
-      required this.name,
-      //required this.phoneNumber,
-      required this.type,
-      required this.image,
-      required this.image_url});
+      required this.Fname,
+      required this.Lname,});
 }
