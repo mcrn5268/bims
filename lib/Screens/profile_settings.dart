@@ -1,19 +1,40 @@
 import 'package:bims/Screens/certs.dart';
 import 'package:bims/Screens/home.dart';
-import 'package:bims/Screens/profile_settings.dart';
+import 'package:bims/cloud/firestore_service.dart';
 import 'package:bims/main.dart';
 import 'package:bims/providers/user_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+class ProfileSettingsScreen extends StatefulWidget {
+  const ProfileSettingsScreen({super.key});
+
+  @override
+  State<ProfileSettingsScreen> createState() => _ProfileSettingsScreenState();
+}
+
+class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
+  final _email = TextEditingController();
+  late UserProvider userProvider;
+  bool isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    userProvider = Provider.of<UserProvider>(context, listen: false);
+    _email.text = userProvider.user!.email;
+  }
+
+  @override
+  void dispose() {
+    _email.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    UserProvider userProvider =
-        Provider.of<UserProvider>(context, listen: false);
     return Scaffold(
         appBar: AppBar(
           leading: const Padding(
@@ -32,7 +53,7 @@ class ProfileScreen extends StatelessWidget {
                   onPressed: () => Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (_, __, ___) => BIMSHome(),
+                      pageBuilder: (_, __, ___) => const BIMSHome(),
                       transitionsBuilder: (_, a, __, c) =>
                           FadeTransition(opacity: a, child: c),
                     ),
@@ -132,39 +153,69 @@ class ProfileScreen extends StatelessWidget {
                             const Divider(),
                             ListTile(
                               leading: const Icon(Icons.email),
-                              title: Text(userProvider.user!.email),
+                              title: TextFormField(
+                                enabled: isEditing,
+                                controller: _email,
+                                decoration: const InputDecoration(
+                                  hintText: 'E-mail',
+                                  border: InputBorder.none,
+                                ),
+                              ),
                             ),
                             const SizedBox(
                               height: 25,
                             ),
                             ElevatedButton(
-                                onPressed: () {
-                                  _dialogBuilder(context);
+                                onPressed: () async {
+                                  if (isEditing) {
+                                    await _dialogBuilder2(context);
+                                  }
+                                  setState(() {
+                                    isEditing = !isEditing;
+                                  });
                                 },
                                 style: ElevatedButton.styleFrom(
                                   shape: const StadiumBorder(),
                                   padding: const EdgeInsets.all(15),
                                   foregroundColor: Colors.white,
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: Colors.green,
                                 ),
-                                child: const Text('Log out')),
+                                child:
+                                    Text(isEditing ? 'Save' : 'Update E-mail')),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Visibility(
+                              visible: !isEditing,
+                              child: ElevatedButton(
+                                  onPressed: () {
+                                    _dialogBuilder1(context);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    shape: const StadiumBorder(),
+                                    padding: const EdgeInsets.all(15),
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: Colors.red,
+                                  ),
+                                  child: const Text('Delete account')),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  shape: const StadiumBorder(),
+                                  padding: const EdgeInsets.all(15),
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.blueGrey,
+                                ),
+                                child: const Text('Back')),
                             const SizedBox(
                               height: 25,
                             ),
-                            Align(
-                                alignment: Alignment.bottomCenter,
-                                child: IconButton(
-                                  icon: const Icon(Icons.settings),
-                                  onPressed: () => Navigator.push(
-                                    context,
-                                    PageRouteBuilder(
-                                      pageBuilder: (_, __, ___) =>
-                                          const ProfileSettingsScreen(),
-                                      transitionsBuilder: (_, a, __, c) =>
-                                          FadeTransition(opacity: a, child: c),
-                                    ),
-                                  ),
-                                ))
                           ],
                         ),
                       ))),
@@ -173,13 +224,13 @@ class ProfileScreen extends StatelessWidget {
         ));
   }
 
-  Future<void> _dialogBuilder(BuildContext context) {
+  Future<void> _dialogBuilder1(BuildContext context) {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Log out'),
-          content: const Text('Are you sure you want to log out?'),
+          title: const Text('Confirm'),
+          content: const Text('Are you sure you want to delete your account?'),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -199,8 +250,16 @@ class ProfileScreen extends StatelessWidget {
                 UserProvider userProvder =
                     Provider.of<UserProvider>(context, listen: false);
                 final nav = Navigator.of(context);
-                await FirebaseAuth.instance.signOut();
-
+                await FirebaseAuth.instance.currentUser?.delete();
+                await FirestoreService().delete(
+                    collection: 'users', documentId: userProvider.user!.uid);
+                Fluttertoast.showToast(
+                  msg: 'Delete successful',
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  backgroundColor: Colors.grey,
+                  textColor: Colors.white,
+                );
                 nav.popUntil((route) => route.isFirst);
                 userProvder.clearUser();
                 // Navigate to a new screen
@@ -209,6 +268,60 @@ class ProfileScreen extends StatelessWidget {
                     builder: (context) => const BIMSMain(),
                   ),
                 );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _dialogBuilder2(BuildContext context) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm'),
+          content: const Text(
+              'You are about to update your information. Wish to proceed?'),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _email.text = userProvider.user!.email;
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('Yes'),
+              onPressed: () async {
+                final user = FirebaseAuth.instance.currentUser!;
+                final nav = Navigator.of(context);
+                try {
+                  await user.updateEmail(_email.text);
+                  await FirestoreService().create(
+                      collection: 'users',
+                      documentId: userProvider.user!.uid,
+                      data: {'email': _email.text});
+                  // Email updated successfully
+                  Fluttertoast.showToast(
+                    msg: 'Update successful',
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM,
+                    backgroundColor: Colors.grey,
+                    textColor: Colors.white,
+                  );
+                  nav.pop();
+                } catch (e) {
+                  // An error occurred while updating the email address
+                  print('error: $e');
+                }
               },
             ),
           ],

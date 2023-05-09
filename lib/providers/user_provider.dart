@@ -25,13 +25,13 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateUser({String? Fname, String? Lname}) {
+  void updateUser({String? fname, String? lname}) {
     if (_user != null) {
       _user = UserModel(
         uid: _user!.uid,
         email: _user!.email,
-        Fname: Fname ?? _user!.Fname,
-        Lname: Lname ?? _user!.Lname,
+        fname: fname ?? _user!.fname,
+        lname: lname ?? _user!.lname,
       );
 
       notifyListeners();
@@ -63,8 +63,8 @@ class UserProvider extends ChangeNotifier {
     final userData = UserModel(
       uid: user.uid,
       email: user.email ?? '',
-      Fname: firestoreUserData!['name']['first'],
-      Lname: firestoreUserData!['name']['last'],
+      fname: firestoreUserData!['fname'],
+      lname: firestoreUserData!['lname'],
     );
     if (_user == null) {
       setUser(userData);

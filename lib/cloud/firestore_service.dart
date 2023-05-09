@@ -33,31 +33,20 @@ class FirestoreService {
     }
   }
 
-  Future<dynamic> read(
-      {required String collection,
-      required String documentId,
-      String? subcollection,
-      String? subdocumentId}) async {
+  Future<dynamic> read({
+    required String collection,
+    String? documentId,
+  }) async {
     try {
-      if (subcollection == null && subdocumentId == null) {
+      if (documentId == null) {
+        QuerySnapshot querySnapshot = await _db
+            .collection(collection)
+            .get();
+        return querySnapshot;
+      } else {
         DocumentSnapshot snapshot =
             await _db.collection(collection).doc(documentId).get();
         return snapshot.data() as Map<String, dynamic>;
-      } else if (subcollection != null && subdocumentId != null) {
-        DocumentSnapshot snapshot = await _db
-            .collection(collection)
-            .doc(documentId)
-            .collection(subcollection)
-            .doc(subdocumentId)
-            .get();
-        return snapshot.data() as Map<String, dynamic>;
-      } else {
-        QuerySnapshot querySnapshot = await _db
-            .collection(collection)
-            .doc(documentId)
-            .collection(subcollection!)
-            .get();
-        return querySnapshot;
       }
     } catch (e) {
       print(
@@ -66,9 +55,45 @@ class FirestoreService {
     }
   }
 
+  // Future<dynamic> read(
+  //     {required String collection,
+  //     required String documentId,
+  //     String? subcollection,
+  //     String? subdocumentId}) async {
+  //   try {
+  //     if (subcollection == null && subdocumentId == null) {
+  //       DocumentSnapshot snapshot =
+  //           await _db.collection(collection).doc(documentId).get();
+  //       return snapshot.data() as Map<String, dynamic>;
+  //     } else if (subcollection != null && subdocumentId != null) {
+  //       DocumentSnapshot snapshot = await _db
+  //           .collection(collection)
+  //           .doc(documentId)
+  //           .collection(subcollection)
+  //           .doc(subdocumentId)
+  //           .get();
+  //       return snapshot.data() as Map<String, dynamic>;
+  //     } else {
+  //       QuerySnapshot querySnapshot = await _db
+  //           .collection(collection)
+  //           .doc(documentId)
+  //           .collection(subcollection!)
+  //           .get();
+  //       return querySnapshot;
+  //     }
+  //   } catch (e) {
+  //     print(
+  //         'Something went wrong FirestoreService.read $collection $documentId $e');
+  //     return null;
+  //   }
+  // }
+
   Future<void> update(
-     { required String collection, required String documentId, required Map<String, dynamic> data,
-      String? subcollection, String? subdocumentId}) async {
+      {required String collection,
+      required String documentId,
+      required Map<String, dynamic> data,
+      String? subcollection,
+      String? subdocumentId}) async {
     if (subcollection == null || subdocumentId == null) {
       await _db.collection(collection).doc(documentId).update(data);
     } else {
@@ -81,8 +106,11 @@ class FirestoreService {
     }
   }
 
-  Future<void> delete({required String collection, required String documentId,
-      String? subcollection, String? subdocumentId}) async {
+  Future<void> delete(
+      {required String collection,
+      required String documentId,
+      String? subcollection,
+      String? subdocumentId}) async {
     if (subcollection == null && subdocumentId == null) {
       await _db.collection(collection).doc(documentId).delete();
     } else {
@@ -116,5 +144,4 @@ class FirestoreService {
       });
     }
   }
-
 }
