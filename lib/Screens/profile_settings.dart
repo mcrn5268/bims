@@ -259,6 +259,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                   gravity: ToastGravity.BOTTOM,
                   backgroundColor: Colors.grey,
                   textColor: Colors.white,
+                  timeInSecForIosWeb: 3,
                 );
                 nav.popUntil((route) => route.isFirst);
                 userProvder.clearUser();
@@ -316,6 +317,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                     gravity: ToastGravity.BOTTOM,
                     backgroundColor: Colors.grey,
                     textColor: Colors.white,
+                    timeInSecForIosWeb: 3,
                   );
                   nav.pop();
                 } catch (e) {

@@ -1,6 +1,7 @@
 import 'package:bims/Screens/home.dart';
 import 'package:bims/Screens/profile.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class CertificateScreen extends StatefulWidget {
   const CertificateScreen({super.key});
@@ -104,7 +105,31 @@ class _CertificateScreenState extends State<CertificateScreen> {
                       width: MediaQuery.of(context).size.width - 300,
                       height: MediaQuery.of(context).size.height - 200,
                       child: ListView(
-                        children: [],
+                        children: [
+                          const SizedBox(
+                            height: 25,
+                          ),
+                          ElevatedButton(
+                              onPressed: () {
+                                Fluttertoast.showToast(
+                                  msg:
+                                      'Barangay Certificate Will Be Sent To Your E-mail',
+                                  toastLength: Toast.LENGTH_LONG,
+                                  gravity: ToastGravity.BOTTOM,
+                                  backgroundColor: Colors.grey,
+                                  textColor: Colors.white,
+                                  timeInSecForIosWeb: 3,
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                shape: const StadiumBorder(),
+                                padding: const EdgeInsets.all(15),
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.blueGrey,
+                              ),
+                              child: const Text('Request Barangy Clearance')),
+                          Image.asset('assets/brgy_cert.jpg')
+                        ],
                       ))),
             ],
           )),

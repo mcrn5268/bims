@@ -27,7 +27,7 @@ class BIMSMain extends StatelessWidget {
               fontFamily: 'Playfair Display',
             ),
             home: userProvider.user != null
-                ? BIMSHome()
+                ? const BIMSHome()
                 : const AuthScreen(),
           );
         },
