@@ -121,6 +121,7 @@ class BIMSHome extends StatelessWidget {
                             'age': data['age'],
                             'gender': data['gender'],
                             'voter': data['voter'],
+                            'pwd': data['pwd']
                           });
                         }
                         print('data $listData');
@@ -178,9 +179,13 @@ class BIMSHome extends StatelessWidget {
                         int femaleCount = listData
                             .where((item) => item['gender'] == 'female')
                             .length;
+                        int lgbtqCount = listData
+                            .where((item) => item['gender'] == 'lgbtq')
+                            .length;
                         List<Map<String, dynamic>> genderData = [
                           {'gender': 'male', 'count': maleCount},
                           {'gender': 'female', 'count': femaleCount},
+                          {'gender': 'lgbtq', 'count': lgbtqCount},
                         ];
 
                         List<charts.Series<Map<String, dynamic>, String>>
@@ -219,25 +224,70 @@ class BIMSHome extends StatelessWidget {
                                 '${item['voter'] ? 'Voter' : 'Non-Voter'}: ${item['count']}',
                           )
                         ];
+
+                        int pwdCount =
+                            listData.where((item) => item['pwd']).length;
+                        int nonPwdCount =
+                            listData.where((item) => !item['pwd']).length;
+                        List<Map<String, dynamic>> pwdData = [
+                          {'pwd': true, 'count': pwdCount},
+                          {'pwd': false, 'count': nonPwdCount},
+                        ];
+
+                        List<charts.Series<Map<String, dynamic>, String>>
+                            pwdSeries = [
+                          charts.Series(
+                            id: "PWD",
+                            data: pwdData,
+                            domainFn: (Map<String, dynamic> item, _) =>
+                                item['pwd'] ? 'PWD' : 'Non-PWD',
+                            measureFn: (Map<String, dynamic> item, _) =>
+                                item['count'],
+                            labelAccessorFn: (Map<String, dynamic> item, _) =>
+                                '${item['pwd'] ? 'PWD' : 'Non-PWD'}: ${item['count']}',
+                          )
+                        ];
                         return ListView(
                           children: [
                             SizedBox(
                               height: 400,
-                              child: charts.PieChart(ageSeries),
+                              child: charts.BarChart(
+                                ageSeries,
+                                animate: true,
+                                vertical: false,
+                              ),
                             ),
                             const Center(child: Text('Age Groups')),
                             const Divider(),
                             SizedBox(
                               height: 400,
-                              child: charts.PieChart(genderSeries),
+                              child: charts.BarChart(
+                                genderSeries,
+                                animate: true,
+                                vertical: false,
+                              ),
                             ),
                             const Center(child: Text('Gender')),
                             const Divider(),
                             SizedBox(
                               height: 400,
-                              child: charts.PieChart(voterSeries),
+                              child: charts.BarChart(
+                                voterSeries,
+                                animate: true,
+                                vertical: false,
+                              ),
                             ),
                             const Center(child: Text('Voter/Non-Voter')),
+                            const Divider(),
+                            SizedBox(
+                              height: 400,
+                              child: charts.BarChart(
+                                pwdSeries,
+                                animate: true,
+                                vertical: false,
+                              ),
+                            ),
+                            const Center(child: Text('PWD/Non-PWD')),
                           ],
                         );
                       } else {

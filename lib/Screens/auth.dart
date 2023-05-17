@@ -5,12 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:provider/provider.dart';
 
-enum Gender { male, female }
+enum Gender { male, female, lgbtq }
+
 enum Voter { yes, no }
+
+enum PWD { yes, no }
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -34,6 +35,7 @@ class _AuthScreenState extends State<AuthScreen> {
   int flag = 0;
   Gender _gender = Gender.male;
   Voter _voter = Voter.no;
+  PWD _pwd = PWD.no;
   bool _loginLoading = false;
   bool _regLoading = false;
 
@@ -81,8 +83,18 @@ class _AuthScreenState extends State<AuthScreen> {
         'fname': _FNameReg.text,
         'lname': _LNameReg.text,
         'email': _emailReg.text,
-        'gender': _gender.toString().substring(_gender.toString().indexOf('.') + 1),
-        'voter': _voter.toString().substring(_voter.toString().indexOf('.') + 1)=='no'?false:true,
+        'gender':
+            _gender.toString().substring(_gender.toString().indexOf('.') + 1),
+        'voter':
+            _voter.toString().substring(_voter.toString().indexOf('.') + 1) ==
+                    'no'
+                ? false
+                : true,
+        'pwd':
+            _pwd.toString().substring(_pwd.toString().indexOf('.') + 1) ==
+                    'no'
+                ? false
+                : true,
         'age': _ageController.text,
       };
       FirestoreService().create(
@@ -181,6 +193,8 @@ class _AuthScreenState extends State<AuthScreen> {
                       _loginPasswordErrorText =
                           'Wrong password provided for that email.';
                     }
+                  } else {
+                    print('else catch e: $e');
                   }
                 } finally {
                   setState(() {
@@ -239,7 +253,7 @@ class _AuthScreenState extends State<AuthScreen> {
             child: Row(
               children: [
                 Flexible(
-                  flex: 2,
+                  flex: 5,
                   child: Row(
                     children: [
                       Flexible(
@@ -266,6 +280,18 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                       ),
                       const Text('Female'),
+                      Flexible(
+                        child: Radio(
+                          value: Gender.lgbtq,
+                          groupValue: _gender,
+                          onChanged: (value) {
+                            setState(() {
+                              _gender = value!;
+                            });
+                          },
+                        ),
+                      ),
+                      const Text('LGBTQ'),
                     ],
                   ),
                 ),
@@ -286,7 +312,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
                 const VerticalDivider(),
                 Flexible(
-                  flex: 3,
+                  flex: 4,
                   child: Row(
                     children: [
                       const Flexible(child: Text('Voter?')),
@@ -309,6 +335,39 @@ class _AuthScreenState extends State<AuthScreen> {
                           onChanged: (value) {
                             setState(() {
                               _voter = value!;
+                            });
+                          },
+                        ),
+                      ),
+                      const Text('No'),
+                    ],
+                  ),
+                ),
+                const VerticalDivider(),
+                Flexible(
+                  flex: 4,
+                  child: Row(
+                    children: [
+                      const Flexible(child: Text('PWD?')),
+                      Flexible(
+                        child: Radio(
+                          value: PWD.yes,
+                          groupValue: _pwd,
+                          onChanged: (value) {
+                            setState(() {
+                              _pwd = value!;
+                            });
+                          },
+                        ),
+                      ),
+                      const Text('Yes'),
+                      Flexible(
+                        child: Radio(
+                          value: PWD.no,
+                          groupValue: _pwd,
+                          onChanged: (value) {
+                            setState(() {
+                              _pwd = value!;
                             });
                           },
                         ),
